@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MR2 Breeding Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0a12;
+    --bg2:       #111120;
+    --panel:     #14142a;
+    --border:    #2a2a5a;
+    --gold:      #f0c040;
+    --gold2:     #c8922a;
+    --cyan:      #30d8f0;
+    --green:     #40e890;
+    --red:       #f04060;
+    --purple:    #9060f0;
+    --text:      #dde0f8;
+    --dim:       #7070a0;
+    --shadow:    0 0 20px #0006;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    min-height: 100vh;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 2px, #ffffff04 2px, #ffffff04 4px),
+      radial-gradient(ellipse at 20% 0%, #1a0a3a 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, #0a1a2a 0%, transparent 60%);
+  }
+
+  /* SCANLINE overlay */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      transparent 0px, transparent 3px, #00000018 3px, #00000018 4px
+    );
+    pointer-events: none; z-index: 9999;
+  }
+
+  header {
+    text-align: center;
+    padding: 28px 20px 20px;
+    border-bottom: 2px solid var(--border);
+    background: linear-gradient(180deg, #1a1035 0%, transparent 100%);
+    position: relative;
+  }
+  header::before {
+    content: '🐉';
+    font-size: 48px;
+    display: block;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 12px #9060f080);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+  h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    color: var(--gold);
+    text-shadow: 0 0 20px var(--gold2), 3px 3px 0 #4a2800;
+    letter-spacing: 2px;
+    line-height: 1.6;
+  }
+  .subtitle {
+    color: var(--cyan);
+    font-size: 18px;
+    margin-top: 8px;
+    opacity: 0.8;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: var(--shadow), inset 0 1px 0 #ffffff08;
+    position: relative;
+  }
+  .panel::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -13px; left: 12px;
+    background: var(--panel);
+    padding: 0 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--gold);
+    border: 1px solid var(--border);
+  }
+
+  .full-width { grid-column: 1 / -1; }
+
+  label {
+    display: block;
+    color: var(--gold);
+    font-size: 16px;
+    margin-bottom: 4px;
+    margin-top: 14px;
+  }
+  label:first-child { margin-top: 0; }
+
+  select, input[type=number] {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    padding: 6px 10px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  select:focus, input:focus { border-color: var(--cyan); }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .stat-box label { font-size: 14px; color: var(--cyan); margin-top: 0; }
+
+  .breed-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Adjusted stats display */
+  .adj-display {
+    margin-top: 14px;
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: none;
+  }
+  .adj-display.visible { display: block; }
+  .adj-display h4 { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--purple); margin-bottom:10px; }
+  .adj-row {
+    display: flex; justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid #ffffff08;
+    font-size: 18px;
+  }
+  .adj-name { color: var(--dim); }
+  .adj-val  { color: var(--green); }
+  .adj-rank { color: var(--gold); font-size: 14px; }
+
+  /* Button */
+  .btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 14px 28px;
+    border: none;
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: all .15s;
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #5040c0, #2a2080);
+    color: #fff;
+    box-shadow: 0 4px 0 #1a1050, 0 0 20px #5040c040;
+    text-shadow: 1px 1px 0 #1a1050;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #1a1050, 0 0 30px #7060d060; }
+  .btn-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 #1a1050; }
+
+  .btn-save {
+    background: linear-gradient(180deg, #204040, #102020);
+    color: var(--cyan);
+    border: 1px solid var(--cyan);
+    font-size: 9px;
+    margin-top: 8px;
+  }
+
+  /* Results area */
+  #results { display: none; }
+  #results.visible { display: block; }
+
+  .dadge-box {
+    background: linear-gradient(135deg, #1a1540, #0a0a20);
+    border: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .dadge-face {
+    font-size: 48px;
+    flex-shrink: 0;
+    animation: float 2.5s ease-in-out infinite;
+  }
+  .dadge-text { font-size: 20px; color: var(--gold); line-height: 1.4; }
+  .dadge-name { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--gold2); margin-bottom:6px; }
+
+  /* Comparison table */
+  .compare-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .parent-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 2px;
+  }
+  .parent-card h4 { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--cyan); margin-bottom:10px; }
+  .stat-line { display:flex; justify-content:space-between; padding:3px 0; font-size:18px; }
+  .stat-line .sname { color:var(--dim); }
+  .stat-line .sval  { color:var(--text); }
+  .stat-line .sadj  { color:var(--green); }
+  .order-display { margin-top:8px; padding:6px; background:var(--bg); border:1px solid var(--border); font-size:16px; }
+  .order-label { color:var(--dim); font-size:14px; }
+  .order-val { color:var(--purple); letter-spacing:3px; }
+
+  /* Children table */
+  .children-header {
+    font-family:'Press Start 2P',monospace;
+    font-size:10px;
+    color:var(--gold);
+    margin-bottom:12px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--border);
+  }
+
+  .child-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 60px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+    font-size: 18px;
+  }
+  .child-row:hover { background: #ffffff08; }
+  .child-row.best  { background: #f0c04010; border-left:3px solid var(--gold); }
+  .child-row.good  { background: #40e89008; border-left:3px solid var(--green); }
+  .child-row.bad   { border-left:3px solid var(--red); opacity:.7; }
+
+  .child-name { color: var(--text); }
+  .child-sub  { color: var(--dim); font-size:15px; }
+  .child-order { color: var(--purple); font-size:15px; letter-spacing:2px; }
+  .child-matches {
+    text-align:center;
+    font-family:'Press Start 2P',monospace;
+    font-size:10px;
+  }
+  .match-stars { color:var(--gold); font-size:18px; }
+
+  .col-header {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 60px;
+    gap: 8px;
+    padding: 6px 12px;
+    font-family:'Press Start 2P',monospace;
+    font-size:8px;
+    color: var(--dim);
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  /* Save loader */
+  .save-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 14px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+  .save-section h4 { font-family:'Press Start 2P',monospace; font-size:9px; color:var(--cyan); margin-bottom:10px; }
+  .save-note { color:var(--dim); font-size:15px; line-height:1.5; }
+
+  /* Loading spinner */
+  .spinner {
+    display: none;
+    text-align: center;
+    padding: 30px;
+    color: var(--cyan);
+    font-family:'Press Start 2P',monospace;
+    font-size:10px;
+    animation: blink 1s infinite;
+  }
+  .spinner.active { display: block; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Tabs */
+  .tabs { display:flex; gap:2px; margin-bottom:16px; }
+  .tab {
+    font-family:'Press Start 2P',monospace;
+    font-size:8px;
+    padding:8px 14px;
+    background:var(--bg2);
+    border:1px solid var(--border);
+    color:var(--dim);
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .tab.active { background:var(--panel); color:var(--gold); border-bottom-color:var(--panel); }
+
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Responsive */
+  @media(max-width:720px) {
+    main { grid-template-columns:1fr; }
+    .full-width { grid-column:1; }
+    .child-row { grid-template-columns:1fr 1fr; }
+    .col-header { display:none; }
+  }
+
+  /* Glow animation on new results */
+  @keyframes glow-in {
+    from { opacity:0; transform:translateY(10px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .anim { animation: glow-in .4s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MONSTER RANCHER 2<br>BREEDING CALCULATOR</h1>
+  <div class="subtitle">▸ Calculadora de Combinações ◂</div>
+</header>
+
+<main>
+
+  <!-- PARENT 1 -->
+  <div class="panel" data-label="PARENT 1 — PAI">
+
+    <div class="save-section" id="save-section">
+      <h4>📂 LER DO SAVE (Steam)</h4>
+      <p class="save-note">Save em: <strong>Documentos\KoeiTecmo\mfdx_en\</strong></p>
+      <select id="save-select" onchange="loadSaveMonsters()">
+        <option value="">— selecionar arquivo .sav —</option>
+        {% for s in saves %}
+        <option value="{{ s }}">{{ s.split('\\')[-1] or s.split('/')[-1] }}</option>
+        {% endfor %}
+      </select>
+      <select id="monster-select" style="display:none;margin-top:8px" onchange="fillFromSave(1)">
+        <option value="">— selecionar monstro —</option>
+      </select>
+      <p class="save-note" style="margin-top:6px;font-size:14px">Ou preencha manualmente abaixo ↓</p>
+    </div>
+
+    <label>Nome do Monstro</label>
+    <input type="text" id="p1-name" placeholder="Ex: Collie" value="">
+
+    <div class="breed-row">
+      <div>
+        <label>Raça Principal</label>
+        <select id="p1-main" onchange="updateAdjusted(1)">
+          <option value="">— selecionar —</option>
+        </select>
+      </div>
+      <div>
+        <label>Sub-Raça</label>
+        <select id="p1-sub">
+          <option value="">— selecionar —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <label>❤ LIFE</label>
+        <input type="number" id="p1-life" min="0" max="999" value="150" oninput="updateAdjusted(1)">
+      </div>
+      <div class="stat-box">
+        <label>💪 POWER</label>
+        <input type="number" id="p1-pow" min="0" max="999" value="111" oninput="updateAdjusted(1)">
+      </div>
+      <div class="stat-box">
+        <label>🧠 INTEL</label>
+        <input type="number" id="p1-int" min="0" max="999" value="612" oninput="updateAdjusted(1)">
+      </div>
+      <div class="stat-box">
+        <label>⚔ SKILL</label>
+        <input type="number" id="p1-skl" min="0" max="999" value="680" oninput="updateAdjusted(1)">
+      </div>
+      <div class="stat-box">
+        <label>💨 SPEED</label>
+        <input type="number" id="p1-spd" min="0" max="999" value="504" oninput="updateAdjusted(1)">
+      </div>
+      <div class="stat-box">
+        <label>🛡 DEFENSE</label>
+        <input type="number" id="p1-def" min="0" max="999" value="95" oninput="updateAdjusted(1)">
+      </div>
+    </div>
+
+    <div class="adj-display" id="adj1">
+      <h4>STATS AJUSTADOS</h4>
+      <div id="adj1-rows"></div>
+      <div class="order-display" style="margin-top:8px">
+        <span class="order-label">ORDEM: </span>
+        <span class="order-val" id="adj1-order"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARENT 2 -->
+  <div class="panel" data-label="PARENT 2 — MÃE / CONGELADO">
+
+    <div class="save-section">
+      <h4>📂 LER DO SAVE (Steam)</h4>
+      <select id="save-select2" onchange="loadSaveMonsters2()">
+        <option value="">— selecionar arquivo .sav —</option>
+        {% for s in saves %}
+        <option value="{{ s }}">{{ s.split('\\')[-1] or s.split('/')[-1] }}</option>
+        {% endfor %}
+      </select>
+      <select id="monster-select2" style="display:none;margin-top:8px" onchange="fillFromSave(2)">
+        <option value="">— selecionar monstro —</option>
+      </select>
+      <p class="save-note" style="margin-top:6px;font-size:14px">Ou preencha manualmente abaixo ↓</p>
+    </div>
+
+    <label>Nome do Monstro</label>
+    <input type="text" id="p2-name" placeholder="Ex: Marigold" value="">
+
+    <div class="breed-row">
+      <div>
+        <label>Raça Principal</label>
+        <select id="p2-main" onchange="updateAdjusted(2)">
+          <option value="">— selecionar —</option>
+        </select>
+      </div>
+      <div>
+        <label>Sub-Raça</label>
+        <select id="p2-sub">
+          <option value="">— selecionar —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <label>❤ LIFE</label>
+        <input type="number" id="p2-life" min="0" max="999" value="286" oninput="updateAdjusted(2)">
+      </div>
+      <div class="stat-box">
+        <label>💪 POWER</label>
+        <input type="number" id="p2-pow" min="0" max="999" value="220" oninput="updateAdjusted(2)">
+      </div>
+      <div class="stat-box">
+        <label>🧠 INTEL</label>
+        <input type="number" id="p2-int" min="0" max="999" value="461" oninput="updateAdjusted(2)">
+      </div>
+      <div class="stat-box">
+        <label>⚔ SKILL</label>
+        <input type="number" id="p2-skl" min="0" max="999" value="505" oninput="updateAdjusted(2)">
+      </div>
+      <div class="stat-box">
+        <label>💨 SPEED</label>
+        <input type="number" id="p2-spd" min="0" max="999" value="400" oninput="updateAdjusted(2)">
+      </div>
+      <div class="stat-box">
+        <label>🛡 DEFENSE</label>
+        <input type="number" id="p2-def" min="0" max="999" value="181" oninput="updateAdjusted(2)">
+      </div>
+    </div>
+
+    <div class="adj-display" id="adj2">
+      <h4>STATS AJUSTADOS</h4>
+      <div id="adj2-rows"></div>
+      <div class="order-display" style="margin-top:8px">
+        <span class="order-label">ORDEM: </span>
+        <span class="order-val" id="adj2-order"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBINE BUTTON -->
+  <div class="full-width" style="text-align:center">
+    <button class="btn btn-primary" onclick="combine()">
+      ⚗ CALCULAR COMBINAÇÃO ⚗
+    </button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="full-width panel" data-label="RESULTADO" id="results">
+
+    <div class="spinner" id="spinner">▸ CALCULANDO... ◂</div>
+
+    <div id="results-inner"></div>
+
+  </div>
+</main>
+
+<script>
+// -------------------------------------------------------------------------
+// Breed list + selects
+// -------------------------------------------------------------------------
+let breeds = [];
+let saveMonsters1 = [];
+let saveMonsters2 = [];
+
+async function loadBreeds() {
+  const r = await fetch('/api/breeds');
+  breeds = await r.json();
+  ['p1-main','p1-sub','p2-main','p2-sub'].forEach(id => {
+    const sel = document.getElementById(id);
+    breeds.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b; opt.textContent = b;
+      sel.appendChild(opt);
+    });
+  });
+  // Default values for demo
+  document.getElementById('p1-main').value = 'Tiger';
+  document.getElementById('p1-sub').value  = 'Suezo';
+  document.getElementById('p2-main').value = 'Zuum';
+  document.getElementById('p2-sub').value  = 'Suezo';
+  updateAdjusted(1);
+  updateAdjusted(2);
+}
+
+// -------------------------------------------------------------------------
+// Save file reading
+// -------------------------------------------------------------------------
+async function loadSaveMonsters() {
+  const path = document.getElementById('save-select').value;
+  if (!path) return;
+  const r = await fetch('/api/read_save', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});
+  saveMonsters1 = await r.json();
+  const sel = document.getElementById('monster-select');
+  sel.innerHTML = '<option value="">— selecionar monstro —</option>';
+  if (saveMonsters1.length === 0) {
+    sel.style.display = 'none';
+    alert('Nenhum monstro encontrado nesse save. O formato pode ser diferente da versão esperada.');
+    return;
+  }
+  saveMonsters1.forEach((m,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${m.name} (${m.main}/${m.sub})`;
+    sel.appendChild(opt);
+  });
+  sel.style.display = 'block';
+}
+
+async function loadSaveMonsters2() {
+  const path = document.getElementById('save-select2').value;
+  if (!path) return;
+  const r = await fetch('/api/read_save', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})});
+  saveMonsters2 = await r.json();
+  const sel = document.getElementById('monster-select2');
+  sel.innerHTML = '<option value="">— selecionar monstro —</option>';
+  if (saveMonsters2.length === 0) {
+    sel.style.display = 'none';
+    return;
+  }
+  saveMonsters2.forEach((m,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${m.name} (${m.main}/${m.sub})`;
+    sel.appendChild(opt);
+  });
+  sel.style.display = 'block';
+}
+
+function fillFromSave(parent) {
+  const monsters = parent === 1 ? saveMonsters1 : saveMonsters2;
+  const selId = parent === 1 ? 'monster-select' : 'monster-select2';
+  const idx = parseInt(document.getElementById(selId).value);
+  if (isNaN(idx)) return;
+  const m = monsters[idx];
+  const p = `p${parent}`;
+  document.getElementById(`${p}-name`).value = m.name;
+  document.getElementById(`${p}-main`).value = m.main;
+  document.getElementById(`${p}-sub`).value  = m.sub;
+  document.getElementById(`${p}-life`).value = m.stats[0];
+  document.getElementById(`${p}-pow`).value  = m.stats[1];
+  document.getElementById(`${p}-int`).value  = m.stats[2];
+  document.getElementById(`${p}-skl`).value  = m.stats[3];
+  document.getElementById(`${p}-spd`).value  = m.stats[4];
+  document.getElementById(`${p}-def`).value  = m.stats[5];
+  updateAdjusted(parent);
+}
+
+// -------------------------------------------------------------------------
+// Adjusted stats display
+// -------------------------------------------------------------------------
+const STAT_ICONS = ['❤','💪','🧠','⚔','💨','🛡'];
+const STAT_NAMES = ['Life','Power','Intel','Skill','Speed','Def'];
+
+async function updateAdjusted(p) {
+  const prefix = `p${p}`;
+  const main = document.getElementById(`${prefix}-main`).value;
+  if (!main) return;
+  const stats = [
+    parseInt(document.getElementById(`${prefix}-life`).value)||0,
+    parseInt(document.getElementById(`${prefix}-pow`).value)||0,
+    parseInt(document.getElementById(`${prefix}-int`).value)||0,
+    parseInt(document.getElementById(`${prefix}-skl`).value)||0,
+    parseInt(document.getElementById(`${prefix}-spd`).value)||0,
+    parseInt(document.getElementById(`${prefix}-def`).value)||0,
+  ];
+  const sub = document.getElementById(`${prefix}-sub`).value;
+  const r = await fetch('/api/adjusted',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({main,sub,stats})});
+  const data = await r.json();
+
+  const box = document.getElementById(`adj${p}`);
+  const rows = document.getElementById(`adj${p}-rows`);
+  const order = document.getElementById(`adj${p}-order`);
+
+  // Sort by adjusted value for display
+  const pairs = STAT_NAMES.map((n,i)=>({name:n,icon:STAT_ICONS[i],raw:stats[i],adj:data.adjusted[i]}));
+  pairs.sort((a,b)=>b.adj-a.adj);
+
+  rows.innerHTML = pairs.map((p,rank)=>`
+    <div class="adj-row">
+      <span class="adj-name">${p.icon} ${p.name}</span>
+      <span class="adj-val">${p.raw} → <strong>${p.adj}</strong></span>
+      <span class="adj-rank">#${rank+1}</span>
+    </div>
+  `).join('');
+
+  order.textContent = data.order.join(' › ');
+  box.classList.add('visible');
+}
+
+// -------------------------------------------------------------------------
+// Main combine
+// -------------------------------------------------------------------------
+async function combine() {
+  const get = id => document.getElementById(id);
+  const p1 = {
+    name: get('p1-name').value || 'Pai 1',
+    main: get('p1-main').value,
+    sub:  get('p1-sub').value,
+    stats: [
+      parseInt(get('p1-life').value)||0,
+      parseInt(get('p1-pow').value)||0,
+      parseInt(get('p1-int').value)||0,
+      parseInt(get('p1-skl').value)||0,
+      parseInt(get('p1-spd').value)||0,
+      parseInt(get('p1-def').value)||0,
+    ]
+  };
+  const p2 = {
+    name: get('p2-name').value || 'Pai 2',
+    main: get('p2-main').value,
+    sub:  get('p2-sub').value,
+    stats: [
+      parseInt(get('p2-life').value)||0,
+      parseInt(get('p2-pow').value)||0,
+      parseInt(get('p2-int').value)||0,
+      parseInt(get('p2-skl').value)||0,
+      parseInt(get('p2-spd').value)||0,
+      parseInt(get('p2-def').value)||0,
+    ]
+  };
+
+  if (!p1.main || !p2.main) { alert('Selecione as raças dos dois pais!'); return; }
+
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('spinner').classList.add('active');
+  document.getElementById('results-inner').innerHTML = '';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+
+  const r = await fetch('/api/combine',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({parent1:p1,parent2:p2})});
+  const data = await r.json();
+
+  document.getElementById('spinner').classList.remove('active');
+  renderResults(data, p1, p2);
+}
+
+function starsFor(matches) {
+  // matches é min(m1,m2), max=6 per parent
+  if (matches >= 5) return '★★★★★';
+  if (matches >= 4) return '★★★★☆';
+  if (matches >= 3) return '★★★☆☆';
+  if (matches >= 2) return '★★☆☆☆';
+  if (matches >= 1) return '★☆☆☆☆';
+  return '☆☆☆☆☆';
+}
+
+function rowClass(total) {
+  if (total >= 10) return 'best';
+  if (total >= 6)  return 'good';
+  if (total <= 2)  return 'bad';
+  return '';
+}
+
+function renderResults(data, p1info, p2info) {
+  const {parent1:pa, parent2:pb, children, dadge, best} = data;
+  const SNAMES = ['Life','Pow','Int','Skl','Spd','Def'];
+  const SICONS = ['❤','💪','🧠','⚔','💨','🛡'];
+
+  let html = `<div class="anim">`;
+
+  // Dadge box
+  html += `
+  <div class="dadge-box">
+    <div class="dadge-face">🧙</div>
+    <div>
+      <div class="dadge-name">DADGE DIZ:</div>
+      <div class="dadge-text">${dadge}</div>
+    </div>
+  </div>`;
+
+  // Parent comparison
+  html += `<div class="compare-table">`;
+  [pa,pb].forEach((par,idx)=>{
+    const info = idx===0 ? p1info : p2info;
+    html += `
+    <div class="parent-card">
+      <h4>${idx===0?'🗡 PAI 1':'🗡 PAI 2'} — ${info.name || '?'}</h4>
+      <div style="color:var(--dim);font-size:15px;margin-bottom:8px">${par.main} / ${par.sub}</div>
+      ${SNAMES.map((n,i)=>`
+        <div class="stat-line">
+          <span class="sname">${SICONS[i]} ${n}</span>
+          <span class="sval">${par.stats[i]}</span>
+          <span class="sadj">→ ${par.adjusted[i]}</span>
+        </div>
+      `).join('')}
+      <div class="order-display">
+        <div class="order-label">ORDEM AJUSTADA</div>
+        <div class="order-val">${par.order.join(' › ')}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Children table
+  html += `
+  <div class="children-header">🥚 POSSÍVEIS FILHOS (ordenados por compatibilidade)</div>
+  <div class="col-header">
+    <span>MONSTRO</span>
+    <span>ORDEM BASE</span>
+    <span>MATCH PAI1</span>
+    <span>MATCH PAI2</span>
+    <span>TOTAL</span>
+  </div>`;
+
+  children.forEach((c, i) => {
+    const cls = rowClass(c.total_matches);
+    const badge = i===0 ? ' 🏆' : '';
+    html += `
+    <div class="child-row ${cls}">
+      <div>
+        <div class="child-name">${c.display_name}${badge}</div>
+        <div class="child-sub">${c.main} / ${c.sub}</div>
+      </div>
+      <div class="child-order">${c.baseline_order.join('›')}</div>
+      <div class="child-matches">
+        <div>${c.matches_p1}/6</div>
+        <div class="match-stars" style="font-size:12px">${starsFor(c.matches_p1)}</div>
+      </div>
+      <div class="child-matches">
+        <div>${c.matches_p2}/6</div>
+        <div class="match-stars" style="font-size:12px">${starsFor(c.matches_p2)}</div>
+      </div>
+      <div class="child-matches" style="color:${c.total_matches>=10?'var(--gold)':c.total_matches>=6?'var(--green)':'var(--red)'}">
+        <div style="font-size:22px">${c.total_matches}</div>
+        <div style="font-size:10px">/ 12</div>
+      </div>
+    </div>`;
+  });
+
+  // Explanation
+  html += `
+  <div style="margin-top:20px;padding:14px;background:var(--bg);border:1px solid var(--border);font-size:16px;color:var(--dim);line-height:1.6">
+    <div style="color:var(--gold);font-family:'Press Start 2P',monospace;font-size:9px;margin-bottom:8px">💡 COMO LER ISSO</div>
+    <div>O jogo usa os <span style="color:var(--green)">STATS AJUSTADOS</span> (não os brutos!) e compara a <span style="color:var(--purple)">ORDEM</span> dos pais com o filho.</div>
+    <div style="margin-top:6px">Quanto mais matches (stat na mesma posição), melhor o filho sai. Com 6+6 = 12 matches, o filho sai perfeito.</div>
+    <div style="margin-top:6px">Seu problema: treina Life=600 mas o multiplicador do seu monstro pode ser 0.5x → ajustado = 300. Se o baseline do filho tem Life em posição diferente → match falha.</div>
+  </div>`;
+
+  html += `</div>`;
+  document.getElementById('results-inner').innerHTML = html;
+}
+
+// Init
+loadBreeds();
+</script>
+</body>
+</html>
