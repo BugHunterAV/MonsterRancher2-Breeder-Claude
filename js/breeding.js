@@ -302,7 +302,7 @@ function renderResults(data, p1info, p2info) {
     document.getElementById('results-inner').innerHTML = html;
 
     // Renderizando o Chart.js Spider Web Chart
-    if (window.comboChart instanceof Chart) { window.comboChart.destroy(); }
+    if (window.comboChart) { window.comboChart.destroy(); }
     const ctx = document.getElementById('combo-chart').getContext('2d');
     const bestChild = children[0].predicted_stats;
 
