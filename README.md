@@ -1,72 +1,62 @@
-# MR2 Breeding Calculator 🐉
+# MR2 Breeding Calculator & Advisor 🐉
 
-Calculadora de combinações para **Monster Rancher 2 DX (Steam)** em Python/Flask.
+Calculadora de combinações e IA de Matchmaking para **Monster Rancher 2 DX (Steam)**. 
+Totalmente construída como uma *Single Page Application (SPA)* Client-Side com Vanilla JS. Sem backend, sem instalações complicadas, roda direto no navegador!
 
-## Como usar
+![MR2 Breeder Interface](https://via.placeholder.com/800x400?text=Monster+Rancher+2+Breeding+Calculator)
 
-### Windows (mais fácil)
-1. Instale Python 3.x em python.org se não tiver
-2. Dê duplo clique em `RODAR.bat`
-3. O navegador abre automaticamente em http://127.0.0.1:5000
+## 🚀 Como usar
 
-### Manual
-```
-pip install flask
-python app.py
-```
-Depois abra http://127.0.0.1:5000 no navegador.
+Como o projeto agora é 100% frontend estático, existem duas maneiras super simples de usar:
 
----
+### Opção 1: Rodar Localmente
+1. Dê um duplo clique no arquivo `index.html`.
+2. O seu navegador padrão vai abrir o aplicativo imediatamente. Pronto!
 
-## Funcionalidades
-
-### ✅ Já funcionando
-- **Entrada manual** dos stats dos dois pais
-- Cálculo dos **stats ajustados** (com multiplicadores por raça)
-- **Ordem dos stats** ajustados
-- **Todos os possíveis filhos** ordenados por compatibilidade
-- **Score de matches** (0-12) por filho — quanto mais alto, melhor o filho sai
-- Mensagem do Dadge com avaliação da combinação
-- Interface visual estilo jogo retrô
-
-### 🔧 Leitura do Save (experimental)
-O app tenta ler automaticamente o save de:
-`Documentos\KoeiTecmo\mfdx_en\`
-
-O formato binário do save do MR2 DX não é público. O app usa offsets descobertos
-pela comunidade via Cheat Engine. **Se não funcionar**, use a entrada manual —
-é igualmente eficaz.
-
-Para melhorar a leitura do save, você pode usar o **Cheat Engine** com a table
-da comunidade (disponível em legendcup.com) para encontrar os offsets corretos
-dos stats do seu monstro e nos informar.
+### Opção 2: Hospedagem (Vercel/GitHub Pages)
+Se o projeto estiver hospedado na Vercel ou GitHub Pages, basta acessar o link do projeto. As atualizações entram no ar instantaneamente.
 
 ---
 
-## Como o Breeding funciona (a mecânica real)
+## ✨ Funcionalidades
+
+### 🧮 Calculadora de Breeding (Manual e via Save File)
+- **Leitura de Save Files (.sav):** Suporte nativo via File API para ler arquivos `.sav` do Monster Rancher 2 DX e extrair os status dos monstros congelados da geladeira automaticamente! (Tudo acontece no seu navegador, nada é enviado para servidores).
+- **Cálculo de Stats Ajustados:** Usa as fórmulas originais do jogo (com multiplicadores por raça oculta) para determinar a ordem genética.
+- **Predição Exata de Status Inicial:** Em vez de apenas dar uma nota de compatibilidade, o app usa a matriz matemática do jogo para calcular exatamente com quais status o filhote vai nascer.
+- **Longevidade (Lifespan):** Cálculo exato da longevidade herdada, penalizando ou bonificando dependendo da diferença genética das classes dos pais.
+- **Itens de Combinação (Secret Seasonings):** Suporte para todos os itens de desbloqueio de raças secretas, peixes (+Lifespan) e chips (+Status).
+- **Chart.js Radar:** Vizualização em gráfico de aranha comparando o Pai 1, Pai 2 e o melhor Filhote.
+
+### 🧠 Breeding Advisor (I.A. de Matchmaking)
+O coração da engenharia reversa do app! 
+Em vez de você ficar chutando pais, o Advisor diz quem você deve procurar:
+1. Você seleciona o Pai 1.
+2. O algoritmo calcula todas as **1.400 cruzas possíveis**.
+3. Ele filtra parceiros impossíveis e encontra as 5 combinações que geram o melhor filhote com o menor "*Dadge Score*", ou seja, a **Compatibilidade Perfeita**.
+4. **Otimização de Esforço:** A IA calcula o "Status Mínimo" que o Pai 2 precisará ter nas posições chave. Nada de treinar 999 em tudo à toa. Ele te dá o esqueleto exato do treino!
+5. **Importação Rápida:** Um clique importa a sugestão direto para a Calculadora principal.
+
+---
+
+## ⚙️ Como o Breeding funciona (A mecânica real do MR2)
 
 O jogo usa stats **AJUSTADOS**, não os brutos:
 - Cada raça tem um multiplicador por stat (ex: Tiger tem Skill x2.0, Defense x0.0)
-- O stat ajustado = stat_atual × multiplicador
-- Os stats são **ordenados** do maior para o menor
-- O jogo compara a **ordem** do pai 1 e pai 2 com a **ordem baseline** do filho
-- Cada match na ordem = +1 ponto de compatibilidade (máx 6 por pai, 12 total)
-- Mais matches → filho com stats melhores E mais chance de sair
+- O `stat ajustado = stat_atual × multiplicador`
+- Os stats são **ordenados** do maior para o menor.
+- O jogo compara a **ordem** do Pai 1 e Pai 2 com a **ordem baseline** do tipo de monstro do filho gerado.
+- Cada "match" na ordem = +1 ponto de compatibilidade (máximo de 6 por pai, 12 no total).
+- Mais matches = O filhote herda um percentual MUITO maior dos status dos pais. Poucos matches = O jogo pune a cruza e o filhote nasce fraco.
 
-### Por que seu monstro com 600 vira 150 na combinação?
-Exemplo: você treinou Life=600 num Tiger.
-- Tiger tem multiplicador Life = 0.50x → ajustado = 300
-- Se o baseline do filho tem Life em posição diferente → match falha
-- Resultado: o filho "herda" o stat em posição errada → vem baixo
-
-**A solução**: antes de treinar, já calcule qual filho quer fazer e treine
-os stats que terão os MAIORES multiplicadores naquele tipo de monstro.
+**Por isso seu monstro 999 gera um bebê fraco:**
+Se você colocar 999 em tudo, a ordem genética do seu monstro vira o padrão da raça DELE. Se a ordem base do filhote for diferente, o jogo não registra os matches genéticos e "quebra" as pontes de herança.
+ *Use o recurso de **I.A. Otimizadora de Stats** no Advisor para saber exatamente qual status segurar e qual aumentar para bater a ordem!*
 
 ---
 
-## Dados das Raças
-Baseado no "Monster Rancher: Combining FAQ" de Kurasu Soratobu e no pacote R
-`ranchr` de duckmayr. Os multiplicadores são os mesmos da versão PS1/DX.
+## 📊 Dados das Raças
+Baseado na dump da engine do jogo original (PS1) cruzado com a versão DX. Todos os multiplicadores, baseline stats e longevidades base são idênticos aos rodados nos servidores e código fonte do Monster Rancher 2.
 
-## Disclaimer
-Projeto fan-made, sem afiliação com Koei Tecmo / Tecmo.
+## ⚖️ Disclaimer
+Projeto open-source e fan-made, criado para estudo de algoritmos de engenharia reversa e SPA architecture. Sem afiliação com Koei Tecmo / Tecmo.
