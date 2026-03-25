@@ -270,30 +270,31 @@ function renderResults(data, p1info, p2info) {
     children.forEach((c, i) => {
       const cls = c.total_matches >= 10 ? 'best' : (c.total_matches >= 6 ? 'good' : 'bad');
       const badge = i===0 ? ' 🏆' : '';
+      const delay = (i * 0.05).toFixed(2);
       
       html += `
-      <div class="child-row ${cls}">
+      <div class="child-row stagger-anim ${cls}" style="animation-delay: ${delay}s;">
         <div>
           <div class="child-name">${c.display_name}${badge}</div>
-          <div class="child-sub" style="font-size: 13px;">[ ${c.main} / ${c.sub} ]</div>
-          <div class="child-order" style="margin-top:6px; font-size: 12px;">${c.baseline_order.join('›')}</div>
+          <div class="child-sub" style="font-size: 14px;">[ ${c.main} / ${c.sub} ]</div>
+          <div class="child-order" style="margin-top:6px; font-size: 13px;">${c.baseline_order.join('›')}</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:16px;color:var(--cyan);font-weight:bold;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:18px;color:var(--cyan);font-weight:bold;">
             <div style="color:#ff8080">❤ ${c.predicted_stats[0]}</div> <div style="color:#ffd080">💪 ${c.predicted_stats[1]}</div>
             <div style="color:#80ff80">🧠 ${c.predicted_stats[2]}</div> <div style="color:#80d0ff">⚔ ${c.predicted_stats[3]}</div>
             <div style="color:#ff80ff">💨 ${c.predicted_stats[4]}</div> <div style="color:#ffff80">🛡 ${c.predicted_stats[5]}</div>
         </div>
         <div class="child-matches">
           <div>${c.matches_p1}/6</div>
-          <div class="match-stars" style="font-size:12px">${starsFor(c.matches_p1)}</div>
+          <div class="match-stars" style="font-size:16px">${starsFor(c.matches_p1)}</div>
         </div>
         <div class="child-matches">
           <div>${c.matches_p2}/6</div>
-          <div class="match-stars" style="font-size:12px">${starsFor(c.matches_p2)}</div>
+          <div class="match-stars" style="font-size:16px">${starsFor(c.matches_p2)}</div>
         </div>
         <div class="child-matches" style="color:${c.total_matches>=10?'var(--gold)':c.total_matches>=6?'var(--green)':'var(--red)'}">
-          <div style="font-size:24px">${c.total_matches}</div>
-          <div style="font-size:10px">/ 12</div>
+          <div style="font-size:28px">${c.total_matches}</div>
+          <div style="font-size:11px">/ 12</div>
         </div>
       </div>`;
     });
