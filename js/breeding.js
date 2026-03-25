@@ -4,6 +4,15 @@ function get_breed(name) {
     return MONSTER_DATA[name] || MONSTER_DATA["Tiger"];
 }
 
+function calc_lifespan(main, sub) {
+    if (!main || !sub) return "--";
+    let m = get_breed(main).lifespan_base;
+    let s = get_breed(sub).lifespan_base;
+    let diff = s - m;
+    let classes = diff / 50;
+    return m + (classes * 20);
+}
+
 function calc_adjusted(main, sub, stats) {
     const main_data = get_breed(main);
     const gains = main_data.gains;
@@ -66,13 +75,41 @@ function calc_all_combos(main1, sub1, stats1, main2, sub2, stats2, seasoning = "
         [main1, sub1, main2, sub2].forEach(b2 => possible_children.add(b1+"|"+b2));
     });
 
-    // Modificadores de Item Secretos (Secret Seasoning) forçando a Linhagem
+    // Modificadores de Item Secretos e Peaches
     let overrideMain = null;
     let overrideSub = null;
-    if (seasoning === "CrabsClaw") { overrideMain = "Arrow Head"; overrideSub = "Arrow Head"; }
-    else if (seasoning === "DoubleEdged") { overrideMain = "Durahan"; overrideSub = "Durahan"; }
-    else if (seasoning === "Mask") { overrideMain = "Joker"; overrideSub = "Joker"; }
-    else if (seasoning === "DnaCapsule") { overrideMain = "Dragon"; overrideSub = "Dragon"; }
+    let extraLife = 0;
+    let extraStats = [0,0,0,0,0,0]; // Life, Pow, Int, Skl, Spd, Def
+
+    const forcedBreeds = {
+        "CrabsClaw": ["Arrow Head", "Arrow Head"],
+        "DoubleEdged": ["Durahan", "Durahan"],
+        "Mask": ["Joker", "Joker"],
+        "DnaCapsule": ["Dragon", "Dragon"],
+        "Stick": ["Ghost", "Ghost"],
+        "Spear": ["Centaur", "Centaur"],
+        "DuckenDoll": ["Ducken", "Ducken"],
+        "UndineSlate": ["Undine", "Undine"],
+        "ZillaBeard": ["Zilla", "Zilla"],
+        "Ammonite": ["Niton", "Niton"],
+        "FireFeather": ["Phoenix", "Phoenix"],
+        "MagicPot": ["Bajarl", "Bajarl"]
+    };
+
+    if (forcedBreeds[seasoning]) {
+        overrideMain = forcedBreeds[seasoning][0];
+        overrideSub = forcedBreeds[seasoning][1];
+    } 
+    // Modificadores de Longevidade
+    else if (seasoning === "GoldenPeach") { extraLife = 50; }
+    else if (seasoning === "SilverPeach") { extraLife = 25; }
+    else if (seasoning === "BothPeaches") { extraLife = 75; }
+    else if (seasoning === "MockChip") { extraLife = 10; }
+    else if (seasoning === "PlantChip") { extraLife = 10; }
+    // Modificadores de Status Base
+    else if (seasoning === "GolemChip") { extraStats[1] = 50; } // Power
+    else if (seasoning === "DuckenChip") { extraStats[4] = 50; } // Speed
+    else if (seasoning === "NagaChip") { extraStats[3] = 50; } // Skill
 
     if (overrideMain) {
         possible_children.clear();
@@ -97,15 +134,19 @@ function calc_all_combos(main1, sub1, stats1, main2, sub2, stats2, seasoning = "
         
         for (let i = 0; i < 6; i++) {
             let inherited = Math.floor( ((stats1[i] + stats2[i]) / 2) * factor );
-            predicted_stats[i] = baseline[i] + inherited;
+            predicted_stats[i] = baseline[i] + inherited + extraStats[i];
         }
+
+        let final_lifespan = calc_lifespan(cm, cs) + extraLife;
 
         results.push({
             main: cm, sub: cs, display_name,
             baseline_order: bl_order_abbr,
             matches_p1: m1, matches_p2: m2,
             min_matches: matches, total_matches,
-            predicted_stats
+            predicted_stats,
+            lifespan: final_lifespan,
+            extra_life: extraLife
         });
     });
 
@@ -140,6 +181,9 @@ function updateAdjustedUI(p) {
     const sub = document.getElementById(`p${p}-sub`).value;
 
     const {adjusted, order_abbr} = calc_adjusted(main, sub, stats);
+
+    const lifeDisp = document.getElementById(`adj${p}-life-disp`);
+    if (lifeDisp) lifeDisp.textContent = `⏳ Max ${calc_lifespan(main, sub)} sem.`;
 
     const box = document.getElementById(`adj${p}`);
     const rows = document.getElementById(`adj${p}-rows`);
@@ -283,6 +327,9 @@ function renderResults(data, p1info, p2info) {
             <div style="color:#ff8080">❤ ${c.predicted_stats[0]}</div> <div style="color:#ffd080">💪 ${c.predicted_stats[1]}</div>
             <div style="color:#80ff80">🧠 ${c.predicted_stats[2]}</div> <div style="color:#80d0ff">⚔ ${c.predicted_stats[3]}</div>
             <div style="color:#ff80ff">💨 ${c.predicted_stats[4]}</div> <div style="color:#ffff80">🛡 ${c.predicted_stats[5]}</div>
+            <div style="color:#ffc040; grid-column: 1/-1; padding-top:6px; border-top:1px dashed #ffffff20; margin-top:2px; font-size:15px;">
+                ⏳ Longevidade Estimada: ${c.lifespan} semanas ${c.extra_life ? `(+${c.extra_life} Item)` : ''}
+            </div>
         </div>
         <div class="child-matches">
           <div>${c.matches_p1}/6</div>

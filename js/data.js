@@ -60,4 +60,8 @@ const MONSTER_DATA = {
 
 const BREED_LIST = Object.keys(MONSTER_DATA).sort();
 
-// TODO na Fase 2: Mapear a matriz de Compatibilidade do Dadge (Lineage Match)
+const BASE_LIFESPANS = {"Pixie": 400, "Dragon": 350, "Centaur": 400, "ColorPandora": 500, "Beaclon": 400, "Henger": 400, "Wracky": 600, "Golem": 450, "Zuum": 450, "Durahan": 500, "Arrow Head": 500, "Tiger": 400, "Hopper": 400, "Suezo": 450, "Baku": 500, "Gali": 350, "Kato": 550, "Zilla": 450, "Bajarl": 450, "Mew": 500, "Phoenix": 450, "Ghost": 400, "Metalner": 450, "Sponge": 450, "Jell": 450, "Hare": 400, "Baddies": 400, "Mono Eye": 400, "Plant": 550, "Monol": 400, "Naga": 350, "Worm": 400, "Gitan": 400, "Mock": 550, "Joker": 350, "Gaboo": 450, "Jill": 450, "Undine": 400, "Niton": 450, "Zan": 400, "Ducken": 400, "Orion": 400, "Hachitaro": 400};
+
+for (let key in MONSTER_DATA) {
+    MONSTER_DATA[key].lifespan_base = BASE_LIFESPANS[key] || 400;
+}

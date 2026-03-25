@@ -57,7 +57,10 @@
         </div>
 
         <div class="adj-display" id="adj1">
-            <h4>STATS AJUSTADOS</h4>
+            <h4 style="display:flex; justify-content:space-between; align-items:center;">
+                <span>STATS AJUSTADOS</span>
+                <span id="adj1-life-disp" style="background:#403010; padding:4px 8px; border-radius:4px; color:var(--gold);">⏳ --</span>
+            </h4>
             <div id="adj1-rows"></div>
             <div class="order-display" style="margin-top:8px">
                 <span class="order-label">ORDEM: </span>
@@ -101,7 +104,10 @@
         </div>
 
         <div class="adj-display" id="adj2">
-            <h4>STATS AJUSTADOS</h4>
+            <h4 style="display:flex; justify-content:space-between; align-items:center;">
+                <span>STATS AJUSTADOS</span>
+                <span id="adj2-life-disp" style="background:#403010; padding:4px 8px; border-radius:4px; color:var(--gold);">⏳ --</span>
+            </h4>
             <div id="adj2-rows"></div>
             <div class="order-display" style="margin-top:8px">
                 <span class="order-label">ORDEM: </span>
@@ -111,15 +117,40 @@
     </div>
 
     <!-- SECRET SEASONING AND COMBINE BUTTON -->
-    <div class="full-width" style="text-align:center; margin-top: 10px;">
-        <label style="display:inline-block; margin-right: 10px;">Tempero Secreto (Item):</label>
-        <select id="secret-seasoning" style="width:280px; display:inline-block; font-size: 16px;">
-            <option value="">(Nenhum)</option>
-            <option value="CrabsClaw">Crab's Claw / Arrow Head</option>
-            <option value="DoubleEdged">Double Edged / Durahan</option>
-            <option value="Mask">Mask / Joker</option>
-            <option value="DnaCapsule">DNA Capsule / Dragon</option>
+    <div class="full-width" style="text-align:center; margin-top: 20px; margin-bottom: 24px; background: var(--bg2); padding: 20px; border: 1px dashed var(--magenta); border-radius: 6px; box-shadow: 0 0 15px #f0409010 inset;">
+        <label style="display:inline-block; margin-right: 10px; font-size: 20px; color: var(--magenta);">🪄 Aditivos da Cruza (Itens):</label>
+        <select id="secret-seasoning" style="width:420px; display:inline-block; font-size: 20px; cursor: pointer; border-color: var(--magenta);">
+            <option value="">— Nenhum Item —</option>
+            <optgroup label="Itens Secretos (Forçam a Raça Única)">
+                <option value="CrabsClaw">Crab's Claw ➔ Gera Arrow Head</option>
+                <option value="DoubleEdged">Double Edged ➔ Gera Durahan</option>
+                <option value="Mask">Mask ➔ Gera Joker</option>
+                <option value="DnaCapsule">DNA Capsule ➔ Gera Dragon</option>
+                <option value="Stick">Stick ➔ Gera Ghost</option>
+                <option value="Spear">Spear ➔ Gera Centaur</option>
+                <option value="DuckenDoll">Ducken Doll ➔ Gera Ducken</option>
+                <option value="UndineSlate">Undine Slate ➔ Gera Undine</option>
+                <option value="ZillaBeard">Zilla Beard ➔ Gera Zilla</option>
+                <option value="Ammonite">Ammonite ➔ Gera Niton</option>
+                <option value="FireFeather">Fire Feather ➔ Gera Phoenix</option>
+                <option value="MagicPot">Magic Pot ➔ Gera Bajarl</option>
+            </optgroup>
+            <optgroup label="Disc Chips Especiais (Soma Status ou Vida na Cruza)">
+                <option value="MockChip">Mock Chip ➔ +10 Semanas de Vida</option>
+                <option value="PlantChip">Plant Chip ➔ +10 Semanas de Vida</option>
+                <option value="GolemChip">Golem Chip ➔ +50 POWER</option>
+                <option value="DuckenChip">Ducken Chip ➔ +50 SPEED</option>
+                <option value="NagaChip">Naga Chip ➔ +50 SKILL</option>
+            </optgroup>
+            <optgroup label="Simuladores de Sobrevivência Pós-Cultivo (Peaches)">
+                <option value="GoldenPeach">Vou dar Golden Peach (+50 Sem.)</option>
+                <option value="SilverPeach">Vou dar Silver Peach (+25 Sem.)</option>
+                <option value="BothPeaches">Vou dar Ambos Pêssegos (+75 Sem.)</option>
+            </optgroup>
         </select>
+        <div style="font-size: 14px; color: var(--dim); margin-top: 14px; line-height: 1.5;">
+            <strong style="color:var(--text)">Dica:</strong> Itens Secretos forçam a genética final mas aproveitam o bônus de cruza. Incluir <i>Peaches</i> no cálculo permite visualizar a estimativa da Vida Útil final real somada!
+        </div>
     </div>
 
     <div class="full-width" style="text-align:center">
@@ -140,9 +171,9 @@
 </main>
 
 <!-- Inclusão dos dados e motor de cálculos -->
-<script src="js/data.js?v=4"></script>
-<script src="js/save_parser.js?v=4"></script>
-<script src="js/breeding.js?v=4"></script>
+<script src="js/data.js?v=6"></script>
+<script src="js/save_parser.js?v=6"></script>
+<script src="js/breeding.js?v=6"></script>
 
 </body>
 </html>
