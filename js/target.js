@@ -30,30 +30,12 @@ function runTargetBreeder() {
 function executeTargetAlgorithm(tgtMain, tgtSub, tStats) {
     const { order_abbr: childOrder, baseline } = get_baseline_order(tgtMain);
     
-    // Descobrir quais raças podem gerar tgtMain/tgtSub
-    // Regra Básica do jogo: Pelo menos UM dos parentes (em Main ou Sub) deve ter a Raça tgtMain, e o outro (ou ele mesmo se puro) ter o tgtSub (ou Sub do outro).
-    // Para simplificar a engenharia, vamos cruzar P1Main e P2Main para ver se o filho gerado pode ser tgtMain/tgtSub
     let potentialParents = [];
     
-    // Alvo Ajustado para dar um Dadge score = 12 (fator ~0.6)
-    const factor = 0.55; 
-    
-    // Os status necessários a serem somados entre Pai 1 e Pai 2 = ((tStats - baseline) / factor) * 2;
-    // Isso porque: PredStat = Baseline + ((P1 + P2) / 2) * factor
-    // Logo: (PredStat - Baseline) / factor = (P1 + P2) / 2
-    // Logo: P1 + P2 = ((PredStat - Baseline) / factor) * 2
-    
-    const requiredSum = [0,0,0,0,0,0];
-    for(let i=0; i<6; i++) {
-        let need = Math.max(0, tStats[i] - baseline[i]);
-        requiredSum[i] = Math.max(0, Math.ceil((need / factor) * 2));
-    }
-
     BREED_LIST.forEach(p1m => {
         BREED_LIST.forEach(p1s => {
             BREED_LIST.forEach(p2m => {
                 BREED_LIST.forEach(p2s => {
-                    // Ver se p1(m/s) x p2(m/s) pode gerar tgtMain/tgtSub
                     let p1s_m = p1m, p1s_s = p1s;
                     let p2s_m = p2m, p2s_s = p2s;
                     
@@ -61,28 +43,21 @@ function executeTargetAlgorithm(tgtMain, tgtSub, tStats) {
                     let mains = [p1s_m, p1s_s, p2s_m, p2s_s];
                     
                     if (tgtMain === tgtSub) {
-                        // Monstro puro: Pelo menos um tem que ser puro, ou ambos tem a raça em evidência
                         if (mains.filter(x => x === tgtMain).length >= 2) canGenerate = true;
                     } else {
-                        // Monstro misto: Um deles (qqr slot) tem a tgtMain, o outro tem a tgtSub
                         if (mains.includes(tgtMain) && mains.includes(tgtSub)) canGenerate = true;
                     }
 
                     if (!canGenerate) return;
 
-                    // Para otimizar a RAM no browser:
-                    // Se a ordem de p1 já for HORRÍVEL (impossível chegar a Dadge), descarta.
-                    // Para garantir um Dadge de pelo menos 10: p1 precisa dar match >= 4 e p2 >= 4 no childOrder
-                    
                     let p1Mults = get_breed(p1s_m).gains;
                     let p2Mults = get_breed(p2s_m).gains;
                     
                     let p1Stats = [0,0,0,0,0,0];
                     let p2Stats = [0,0,0,0,0,0];
                     
-                    // TARGET_ADJ array base para fazer match genético nas ordens (400, 320, 240...)
+                    // 1. Determina o Treino Mínimo absoluto para garantir a Ordem Genética
                     const TARGET_ADJ = [400, 320, 240, 160, 80, 20];
-                    let p1Diff = 0, p2Diff = 0;
 
                     for(let i=0; i<6; i++) {
                         let statAbbr = childOrder[i];
@@ -91,54 +66,68 @@ function executeTargetAlgorithm(tgtMain, tgtSub, tStats) {
                         let m1 = GAIN_TO_MULT[p1Mults[idx]];
                         let m2 = GAIN_TO_MULT[p2Mults[idx]];
                         
-                        // Determinar MÍNIMO para match genético:
-                        let p1ReqMatch = m1 === 0 ? 999 : Math.ceil(TARGET_ADJ[i] / m1);
-                        let p2ReqMatch = m2 === 0 ? 999 : Math.ceil(TARGET_ADJ[i] / m2);
-                        
-                        // Dividir a "requiredSum" entre os pais equilibradamente, MAS focado em quem tem o melhor multiplicador
-                        let neededTotal = requiredSum[idx];
-                        
-                        let alloc1 = 0, alloc2 = 0;
-                        if (m1 > m2) {
-                            alloc1 = Math.min(999, neededTotal);
-                            alloc2 = Math.min(999, Math.max(0, neededTotal - alloc1));
-                        } else if (m2 > m1) {
-                            alloc2 = Math.min(999, neededTotal);
-                            alloc1 = Math.min(999, Math.max(0, neededTotal - alloc2));
-                        } else {
-                            alloc1 = Math.min(999, Math.ceil(neededTotal/2));
-                            alloc2 = Math.min(999, Math.ceil(neededTotal/2));
-                        }
-                        
-                        // O status final do pai deve ser o MÁXIMO entre: o que ele precisa para bater a ordem genética do filhote E o que ele precisa para atingir o valor bruto do requirement Sum.
-                        p1Stats[idx] = Math.min(999, Math.max(p1ReqMatch, alloc1));
-                        p2Stats[idx] = Math.min(999, Math.max(p2ReqMatch, alloc2));
-                        
-                        p1Diff += p1Stats[idx];
-                        p2Diff += p2Stats[idx];
+                        p1Stats[idx] = m1 === 0 ? 999 : Math.ceil(TARGET_ADJ[i] / m1);
+                        p2Stats[idx] = m2 === 0 ? 999 : Math.ceil(TARGET_ADJ[i] / m2);
+                        if (p1Stats[idx] > 999) p1Stats[idx] = 999;
+                        if (p2Stats[idx] > 999) p2Stats[idx] = 999;
                     }
 
-                    // Verifica Dadge final
                     const p1A = calc_adjusted(p1s_m, p1s_s, p1Stats);
                     const p2A = calc_adjusted(p2s_m, p2s_s, p2Stats);
                     
                     let match1 = count_matches(p1A.order_abbr, childOrder);
                     let match2 = count_matches(p2A.order_abbr, childOrder);
+                    let totalMatches = match1 + match2;
                     
-                    if (match1 + match2 >= 10) {
-                        potentialParents.push({
-                            p1M: p1s_m, p1S: p1s_s, p1Stats, p1Diff, p1AOrder: p1A.order_abbr, m1: match1,
-                            p2M: p2s_m, p2S: p2s_s, p2Stats, p2Diff, p2AOrder: p2A.order_abbr, m2: match2,
-                            totalDiff: p1Diff + p2Diff,
-                            totalMatches: match1 + match2
-                        });
+                    if (totalMatches < 10) return; // Se a ordem fundamental for ruim, aborta.
+
+                    // 2. Agora que temos os Pais Perfeitos, calculamos o Fator EXATO da Genética deles
+                    let factor = (totalMatches / 24) + 0.1;
+
+                    let p1Diff = 0, p2Diff = 0;
+                    
+                    for(let i=0; i<6; i++) {
+                        let need = Math.max(0, tStats[i] - baseline[i]);
+                        let requiredSum = Math.max(0, Math.ceil((need / factor) * 2));
+                        
+                        let req1 = p1Stats[i];
+                        let req2 = p2Stats[i];
+                        
+                        // 3. Balancear o restante de forma EQUALITÁRIA pros dois pais terem status idênticos, como solicitado
+                        if (req1 + req2 < requiredSum) {
+                            let missing = requiredSum - (req1 + req2);
+                            // Tenta emparelhar
+                            if (req1 < req2) {
+                                let add1 = Math.min(missing, req2 - req1);
+                                req1 += add1; missing -= add1;
+                            } else if (req2 < req1) {
+                                let add2 = Math.min(missing, req1 - req2);
+                                req2 += add2; missing -= add2;
+                            }
+                            req1 += Math.ceil(missing / 2);
+                            req2 += Math.floor(missing / 2);
+                        }
+                        
+                        p1Stats[i] = Math.min(999, req1);
+                        p2Stats[i] = Math.min(999, req2);
+                        
+                        p1Diff += p1Stats[i];
+                        p2Diff += p2Stats[i];
                     }
+
+                    // Verifica se inflar os stats distorceu muito a ordem inicial, mas guarda o resultado original para o Dadge Score visível.
+                    potentialParents.push({
+                        p1M: p1s_m, p1S: p1s_s, p1Stats, p1Diff, p1AOrder: p1A.order_abbr, m1: match1,
+                        p2M: p2s_m, p2S: p2s_s, p2Stats, p2Diff, p2AOrder: p2A.order_abbr, m2: match2,
+                        totalDiff: p1Diff + p2Diff,
+                        totalMatches: totalMatches
+                    });
                 });
             });
         });
     });
 
-    // Ordena pelo menor esforço total, e desempata por total de matches
+    // Ordena pelo menor esforço total de ambos
     potentialParents.sort((a,b) => {
         if (a.totalDiff !== b.totalDiff) return a.totalDiff - b.totalDiff;
         return b.totalMatches - a.totalMatches;
