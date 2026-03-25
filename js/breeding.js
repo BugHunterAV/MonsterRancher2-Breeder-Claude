@@ -170,6 +170,27 @@ function updateAdjustedUI(p) {
     const main = document.getElementById(`p${p}-main`).value;
     if (!main) return;
 
+    // NOVIDADE: Mostrar os Multiplicadores Ocultos e a Ordem Genética Original para o usuário
+    const breedData = get_breed(main);
+    const mGains = breedData.gains;
+    const mults = mGains.map(g => GAIN_TO_MULT[g]).map(m => `x${m.toFixed(2)}`);
+    const { order_abbr: baseOrder } = get_baseline_order(main);
+
+    const infoBox = document.getElementById(`p${p}-breed-info`);
+    if(infoBox) {
+        infoBox.style.display = 'block';
+        infoBox.innerHTML = `
+            <div style="color:var(--cyan); margin-bottom:6px; font-family:'Press Start 2P', monospace; font-size:10px;">▸ MULTIPLICADORES DA RAÇA (${main})</div>
+            <div style="display:flex; justify-content:space-between; font-size:20px; color:var(--text); margin-bottom:6px;">
+                <span>❤ ${mults[0]}</span> <span>💪 ${mults[1]}</span> <span>🧠 ${mults[2]}</span>
+                <span>⚔ ${mults[3]}</span> <span>💨 ${mults[4]}</span> <span>🛡 ${mults[5]}</span>
+            </div>
+            <div style="color:var(--purple); font-size:18px; letter-spacing:2px;">
+                <span style="color:var(--dim); font-size:14px;">ORDEM BASE:</span> ${baseOrder.join(' › ')}
+            </div>
+        `;
+    }
+
     const stats = [
         parseInt(document.getElementById(`p${p}-life`).value)||0,
         parseInt(document.getElementById(`p${p}-pow`).value)||0,
