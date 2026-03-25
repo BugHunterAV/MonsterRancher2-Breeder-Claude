@@ -97,7 +97,7 @@ h1 {
     box-shadow: 0 -4px 15px #5040c040;
 }
 .tab-content { display: none; }
-.tab-content.active { display: block; animation: slide-in-fade 0.4s ease forwards; }
+.tab-content.active { display: grid; animation: slide-in-fade 0.4s ease forwards; }
 /* ============================================== */
 
 main {

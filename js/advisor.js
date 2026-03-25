@@ -188,6 +188,84 @@ function renderAdvisorResults(matches, p1) {
             </div>
         </div>`;
     });
-
     resDiv.innerHTML = html;
+}
+
+function importP2(main, sub, l, p, i, sk, sp, d) {
+    document.getElementById('p2-main').value = main;
+    // Trigger populate for sub-breeds
+    populateSubBreeds('p2');
+    document.getElementById('p2-sub').value = sub;
+    
+    document.getElementById('p2-life').value = l;
+    document.getElementById('p2-pow').value = p;
+    document.getElementById('p2-int').value = i;
+    document.getElementById('p2-skl').value = sk;
+    document.getElementById('p2-spd').value = sp;
+    document.getElementById('p2-def').value = d;
+    
+    // Refresh calculations
+    updateAdjustedUI('p2');
+    processCombination();
+    
+    // Switch to calculator tab
+    switchTab('calculator');
+}
+
+function optimizeCurrentP2() {
+    const p1Main = document.getElementById('p1-main').value;
+    const p1Sub = document.getElementById('p1-sub').value;
+    const p2Main = document.getElementById('p2-main').value;
+    const p2Sub = document.getElementById('p2-sub').value;
+    
+    if(!p1Main || !p2Main) {
+        alert("Selecione os monstros Pai 1 e Pai 2 primeiro!");
+        return;
+    }
+
+    const p1Stats = [
+        parseInt(document.getElementById(`p1-life`).value)||0,
+        parseInt(document.getElementById(`p1-pow`).value)||0,
+        parseInt(document.getElementById(`p1-int`).value)||0,
+        parseInt(document.getElementById(`p1-skl`).value)||0,
+        parseInt(document.getElementById(`p1-spd`).value)||0,
+        parseInt(document.getElementById(`p1-def`).value)||0
+    ];
+    
+    const { order_abbr: p1Order } = calc_adjusted(p1Main, p1Sub, p1Stats);
+    
+    // Tenta encontrar qual filhote essa cruza prioriza (mais provável)
+    // Para simplificar, pegamos o primeiro filho possível da lista que tenha a mesma Main do P1 ou P2
+    let cm = p1Main; 
+    let cs = p2Main;
+    let { order_abbr: childOrder } = get_baseline_order(cm);
+
+    // Alvos ideais
+    const TARGET_ADJ = [400, 320, 240, 160, 80, 20]; 
+    const p2Baseline = get_breed(p2Main).baseline;
+    const p2Gains = get_breed(p2Main).gains;
+    
+    let optimized = [0,0,0,0,0,0];
+    for(let i=0; i<6; i++) {
+        let statAbbr = childOrder[i];
+        let idx = STAT_ABBR.indexOf(statAbbr);
+        let mult = GAIN_TO_MULT[p2Gains[idx]];
+        
+        let req = (mult === 0) ? 999 : Math.ceil(TARGET_ADJ[i] / mult);
+        optimized[idx] = Math.max(req, p2Baseline[idx]);
+        if(optimized[idx] > 999) optimized[idx] = 999;
+    }
+
+    // Aplicar ao UI
+    document.getElementById('p2-life').value = optimized[0];
+    document.getElementById('p2-pow').value = optimized[1];
+    document.getElementById('p2-int').value = optimized[2];
+    document.getElementById('p2-skl').value = optimized[3];
+    document.getElementById('p2-spd').value = optimized[4];
+    document.getElementById('p2-def').value = optimized[5];
+    
+    updateAdjustedUI('p2');
+    processCombination();
+    
+    alert("✨ Stats do Pai 2 otimizados para se alinhar perfeitamente à ordem genética do filhote!");
 }
