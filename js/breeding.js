@@ -424,7 +424,7 @@ function renderResults(data, p1info, p2info) {
 window.addEventListener('DOMContentLoaded', () => {
 
     // 1. Popula os Selects com a Base de Dados primeiro
-    const selects = ['p1-main','p1-sub','p2-main','p2-sub'];
+    const selects = ['p1-main','p1-sub','p2-main','p2-sub','tgt-main','tgt-sub'];
     selects.forEach(id => {
         const sel = document.getElementById(id);
         if(!sel) return;

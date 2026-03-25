@@ -20,7 +20,8 @@
     
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('calculator')">⚗️ CALCULADORA (CRUZA)</button>
-        <button class="tab-btn" onclick="switchTab('advisor')">🧠 ADVISOR (I.A.)</button>
+        <button class="tab-btn" onclick="switchTab('advisor')">🧠 ADVISOR (PAI 2)</button>
+        <button class="tab-btn" onclick="switchTab('target')">🎯 TARGET BREEDER</button>
     </div>
 </header>
 
@@ -193,11 +194,50 @@
     <div id="adv-results"></div>
 </main>
 
+<main id="tab-target" class="tab-content">
+    <div class="panel" data-label="TARGET BREEDER (ALVO DE FILHOTE)">
+        <p style="font-size:18px; color:var(--text); line-height:1.5;">O <strong style="color:var(--magenta);">Target Breeder</strong> permite que você escolha qual monstro você quer que nasça e quais os Status aproximados que deseja para ele. O algoritmo fará a engenharia reversa e encontrará os <strong>Pais Perfeitos</strong> com o menor Esforço de Treino exigido para que isso aconteça.</p>
+        
+        <div style="margin-top:20px; padding:16px; background:var(--bg2); border:1px solid var(--border); border-radius:4px;">
+            <label style="color:var(--cyan); margin-bottom:10px; display:block; margin-top:0;">1. Escolha a Raça do Filhote Desejado</label>
+            <div class="breed-row">
+                <div>
+                    <label>Raça Principal</label>
+                    <select id="tgt-main">
+                        <option value="">— selecionar —</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Sub-Raça</label>
+                    <select id="tgt-sub">
+                        <option value="">— selecionar —</option>
+                    </select>
+                </div>
+            </div>
+
+            <label style="color:var(--cyan); margin-top:24px; display:block;">2. Digite os Stats aproximados que deseja que ele NASÇA tendo:</label>
+            <div class="stats-grid">
+                <div class="stat-box"><label>❤ LIFE</label><input type="number" id="tgt-life" min="0" max="999" value="150"></div>
+                <div class="stat-box"><label>💪 POWER</label><input type="number" id="tgt-pow" min="0" max="999" value="150"></div>
+                <div class="stat-box"><label>🧠 INTEL</label><input type="number" id="tgt-int" min="0" max="999" value="150"></div>
+                <div class="stat-box"><label>⚔ SKILL</label><input type="number" id="tgt-skl" min="0" max="999" value="150"></div>
+                <div class="stat-box"><label>💨 SPEED</label><input type="number" id="tgt-spd" min="0" max="999" value="150"></div>
+                <div class="stat-box"><label>🛡 DEFENSE</label><input type="number" id="tgt-def" min="0" max="999" value="150"></div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="runTargetBreeder()">🎯 ENCONTRAR OS PAIS IDEAIS</button>
+    </div>
+
+    <div id="tgt-results"></div>
+</main>
+
 <!-- Inclusão dos dados e motor de cálculos -->
-<script src="js/data.js?v=9"></script>
-<script src="js/save_parser.js?v=9"></script>
-<script src="js/breeding.js?v=9"></script>
-<script src="js/advisor.js?v=9"></script>
+<script src="js/data.js?v=11"></script>
+<script src="js/save_parser.js?v=11"></script>
+<script src="js/breeding.js?v=11"></script>
+<script src="js/advisor.js?v=11"></script>
+<script src="js/target.js?v=11"></script>
 
 </body>
 </html>
