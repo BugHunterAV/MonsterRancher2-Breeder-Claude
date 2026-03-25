@@ -16,10 +16,15 @@
 
 <header>
     <h1>MONSTER RANCHER 2<br>BREEDING CALCULATOR</h1>
-    <div class="subtitle">▸ Calculadora de Combinações ◂</div>
+    <div class="subtitle">▸ Calculadora & Assistente de Matchmaking ◂</div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('calculator')">⚗️ CALCULADORA (CRUZA)</button>
+        <button class="tab-btn" onclick="switchTab('advisor')">🧠 ADVISOR (I.A.)</button>
+    </div>
 </header>
 
-<main>
+<main id="tab-calculator" class="tab-content active">
     <!-- PARENT 1 -->
     <div class="panel" data-label="PARENT 1 — PAI">
         <!-- Save Section Frontend -> Parseia local com JS puro -->
@@ -174,10 +179,25 @@
     </div>
 </main>
 
+<main id="tab-advisor" class="tab-content">
+    <div class="panel" data-label="BREEDING ADVISOR (ENGENHARIA REVERSA)">
+        <p style="font-size:18px; color:var(--text); line-height:1.5;">O <strong style="color:var(--cyan);">Smart Advisor</strong> lê todos os atributos do seu <strong>Pai 1</strong> atual preenchido na Calculadora e testa instantaneamente <strong style="color:var(--gold);">+1.400 combinações</strong> de Monstros para descobrir quem é o PAI 2 perfeito, exigindo o menor esforço de treino de atributos possível para alinhar às tabelas.</p>
+        
+        <div id="adv-parent1-summary" style="margin: 16px 0; background:var(--bg); border:1px solid #ffffff10; padding:12px; border-radius:4px; min-height:80px; display:flex; flex-direction:column; justify-content:center;">
+            <div style="color:var(--dim); font-size:16px;">Selecione o Pai 1 e clique no botão abaixo.</div>
+        </div>
+        
+        <button class="btn btn-primary" onclick="runAdvisor()">🧠 MAPEAR OS 5 MELHORES PARCEIROS</button>
+    </div>
+
+    <div id="adv-results"></div>
+</main>
+
 <!-- Inclusão dos dados e motor de cálculos -->
-<script src="js/data.js?v=6"></script>
-<script src="js/save_parser.js?v=6"></script>
-<script src="js/breeding.js?v=6"></script>
+<script src="js/data.js?v=7"></script>
+<script src="js/save_parser.js?v=7"></script>
+<script src="js/breeding.js?v=7"></script>
+<script src="js/advisor.js?v=7"></script>
 
 </body>
 </html>
