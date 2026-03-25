@@ -353,7 +353,20 @@ function renderResults(data, p1info, p2info) {
 
 // Inicializadores
 window.addEventListener('DOMContentLoaded', () => {
-    // Escuta todos os inputs de stats e selects para disparar o update visual ajustado localmente
+
+    // 1. Popula os Selects com a Base de Dados primeiro
+    const selects = ['p1-main','p1-sub','p2-main','p2-sub'];
+    selects.forEach(id => {
+        const sel = document.getElementById(id);
+        if(!sel) return;
+        BREED_LIST.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b; opt.textContent = b;
+            sel.appendChild(opt);
+        });
+    });
+
+    // 2. Escuta todos os inputs de stats e selects para disparar updates
     ['1', '2'].forEach(p => {
         // Auto-preenche com o status base daquela raça assim que o usuário seleciona a Raça Principal
         const mainSelect = document.getElementById(`p${p}-main`);
@@ -368,19 +381,48 @@ window.addEventListener('DOMContentLoaded', () => {
                     document.getElementById(`p${p}-skl`).value  = baseline[3];
                     document.getElementById(`p${p}-spd`).value  = baseline[4];
                     document.getElementById(`p${p}-def`).value  = baseline[5];
+                    // Chama a atualização de UI na hora para atualizar as barras de ordem
                     updateAdjustedUI(p);
                 }
             });
         }
 
+        // Para as outras coisas, se digitar na mão, apenas recalcula a interface visual:
         ['main', 'sub', 'life', 'pow', 'int', 'skl', 'spd', 'def'].forEach(field => {
             const el = document.getElementById(`p${p}-${field}`);
             if(el) {
+                // Não adicionamos listener de change duplo pro 'main' não engasgar.
+                if (field !== 'main') {
+                    el.addEventListener('change', () => updateAdjustedUI(p));
+                }
                 el.addEventListener('input', () => updateAdjustedUI(p));
-                el.addEventListener('change', () => updateAdjustedUI(p));
             }
         });
     });
 
-    document.getElementById('btn-combine').addEventListener('click', processCombination);
+    // 3. Configura Arquivos e Botões
+    const save1 = document.getElementById('save-input1');
+    if (save1) save1.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) handleSaveFileDrop(e.target.files[0], '1');
+    });
+    
+    const save2 = document.getElementById('save-input2');
+    if (save2) save2.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) handleSaveFileDrop(e.target.files[0], '2');
+    });
+
+    const btnCombine = document.getElementById('btn-combine');
+    if (btnCombine) btnCombine.addEventListener('click', processCombination);
+    
+    // 4. Injeta os Valores Iniciais e Emite o disparo para Preencher Instantaneamente!
+    const p1m = document.getElementById('p1-main');
+    if (p1m) { p1m.value = 'Tiger'; p1m.dispatchEvent(new Event('change')); }
+    const p1s = document.getElementById('p1-sub');
+    if (p1s) { p1s.value = 'Suezo'; p1s.dispatchEvent(new Event('change')); }
+
+    const p2m = document.getElementById('p2-main');
+    if (p2m) { p2m.value = 'Zuum'; p2m.dispatchEvent(new Event('change')); }
+    const p2s = document.getElementById('p2-sub');
+    if (p2s) { p2s.value = 'Suezo'; p2s.dispatchEvent(new Event('change')); }
+
 });

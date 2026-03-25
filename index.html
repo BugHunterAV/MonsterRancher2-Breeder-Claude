@@ -144,38 +144,5 @@
 <script src="js/save_parser.js"></script>
 <script src="js/breeding.js"></script>
 
-<script>
-    // Configurando Eventos de Input
-    document.getElementById('save-input1').addEventListener('change', (e) => {
-        if(e.target.files.length > 0) handleSaveFileDrop(e.target.files[0], '1');
-    });
-    document.getElementById('save-input2').addEventListener('change', (e) => {
-        if(e.target.files.length > 0) handleSaveFileDrop(e.target.files[0], '2');
-    });
-
-    // Inicialização do Formulário com o catálogo nativo de Data
-    window.addEventListener('DOMContentLoaded', () => {
-        const selects = ['p1-main','p1-sub','p2-main','p2-sub'];
-        selects.forEach(id => {
-            const sel = document.getElementById(id);
-            BREED_LIST.forEach(b => {
-                const opt = document.createElement('option');
-                opt.value = b; opt.textContent = b;
-                sel.appendChild(opt);
-            });
-        });
-
-        // Valores genéricos de demonstração (Default)
-        document.getElementById('p1-main').value = 'Tiger';
-        document.getElementById('p1-sub').value  = 'Suezo';
-        document.getElementById('p2-main').value = 'Zuum';
-        document.getElementById('p2-sub').value  = 'Suezo';
-
-        // Dispara o evento de mudança para carregar os stats base das raças iniciais automaticamente!
-        document.getElementById('p1-main').dispatchEvent(new Event('change'));
-        document.getElementById('p2-main').dispatchEvent(new Event('change'));
-    });
-</script>
-
 </body>
 </html>
