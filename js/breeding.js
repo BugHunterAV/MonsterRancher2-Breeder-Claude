@@ -436,35 +436,38 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     // 2. Escuta todos os inputs de stats e selects para disparar updates
-    ['1', '2'].forEach(p => {
+    ['p1', 'p2', 'tgt'].forEach(prefix => {
         // Auto-preenche com o status base daquela raça assim que o usuário seleciona a Raça Principal
-        const mainSelect = document.getElementById(`p${p}-main`);
+        const mainSelect = document.getElementById(`${prefix}-main`);
         if (mainSelect) {
             mainSelect.addEventListener('change', (e) => {
                 const mainName = e.target.value;
                 if (mainName && typeof MONSTER_DATA !== 'undefined' && MONSTER_DATA[mainName]) {
                     const baseline = MONSTER_DATA[mainName].baseline;
-                    document.getElementById(`p${p}-life`).value = baseline[0];
-                    document.getElementById(`p${p}-pow`).value  = baseline[1];
-                    document.getElementById(`p${p}-int`).value  = baseline[2];
-                    document.getElementById(`p${p}-skl`).value  = baseline[3];
-                    document.getElementById(`p${p}-spd`).value  = baseline[4];
-                    document.getElementById(`p${p}-def`).value  = baseline[5];
-                    // Chama a atualização de UI na hora para atualizar as barras de ordem
-                    updateAdjustedUI(p);
+                    document.getElementById(`${prefix}-life`).value = baseline[0];
+                    document.getElementById(`${prefix}-pow`).value  = baseline[1];
+                    document.getElementById(`${prefix}-int`).value  = baseline[2];
+                    document.getElementById(`${prefix}-skl`).value  = baseline[3];
+                    document.getElementById(`${prefix}-spd`).value  = baseline[4];
+                    document.getElementById(`${prefix}-def`).value  = baseline[5];
+                    // Chama a atualização de UI na hora para atualizar as barras de ordem, se for p1 ou p2
+                    if (prefix === 'p1') updateAdjustedUI('1');
+                    if (prefix === 'p2') updateAdjustedUI('2');
                 }
             });
         }
 
-        // Para as outras coisas, se digitar na mão, apenas recalcula a interface visual:
+        // Para as outras coisas, se digitar na mão, apenas recalcula a interface visual (no p1 e p2):
         ['main', 'sub', 'life', 'pow', 'int', 'skl', 'spd', 'def'].forEach(field => {
-            const el = document.getElementById(`p${p}-${field}`);
-            if(el) {
+            const el = document.getElementById(`${prefix}-${field}`);
+            if(el && prefix !== 'tgt') {
                 // Não adicionamos listener de change duplo pro 'main' não engasgar.
                 if (field !== 'main') {
-                    el.addEventListener('change', () => updateAdjustedUI(p));
+                    const pNum = prefix === 'p1' ? '1' : '2';
+                    el.addEventListener('change', () => updateAdjustedUI(pNum));
                 }
-                el.addEventListener('input', () => updateAdjustedUI(p));
+                const pNum = prefix === 'p1' ? '1' : '2';
+                el.addEventListener('input', () => updateAdjustedUI(pNum));
             }
         });
     });
