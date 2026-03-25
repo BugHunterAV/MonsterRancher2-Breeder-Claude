@@ -192,11 +192,14 @@ function renderAdvisorResults(matches, p1) {
 }
 
 function importP2(main, sub, l, p, i, sk, sp, d) {
-    document.getElementById('p2-main').value = main;
-    // Trigger populate for sub-breeds
-    populateSubBreeds('p2');
-    document.getElementById('p2-sub').value = sub;
+    // Definimos os valores nos selects
+    const mainEl = document.getElementById('p2-main');
+    const subEl = document.getElementById('p2-sub');
     
+    if (mainEl) mainEl.value = main;
+    if (subEl) subEl.value = sub;
+    
+    // Definimos os stats vindos do advisor (sobrescrevendo qualquer valor anterior)
     document.getElementById('p2-life').value = l;
     document.getElementById('p2-pow').value = p;
     document.getElementById('p2-int').value = i;
@@ -204,12 +207,17 @@ function importP2(main, sub, l, p, i, sk, sp, d) {
     document.getElementById('p2-spd').value = sp;
     document.getElementById('p2-def').value = d;
     
-    // Refresh calculations
+    // Forçamos a atualização da interface do Parent 2
     updateAdjustedUI('p2');
+    
+    // Executamos o cálculo de combinação total
     processCombination();
     
-    // Switch to calculator tab
+    // Mudamos para a aba da calculadora
     switchTab('calculator');
+    
+    // Feedback visual opcional: scroll para o topo
+    window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
 function optimizeCurrentP2() {
