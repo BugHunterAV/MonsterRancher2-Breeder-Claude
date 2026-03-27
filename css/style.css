@@ -47,13 +47,27 @@ header {
 }
 header::before {
     content: '🐉';
-    font-size: 48px;
+    font-size: 52px;
     display: block;
-    margin-bottom: 8px;
-    filter: drop-shadow(0 0 12px #9060f080);
-    animation: float 3s ease-in-out infinite;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 15px #9060f0);
+    animation: dragon-float 4s ease-in-out infinite;
 }
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+@keyframes dragon-float {
+    0%, 100% {
+        transform: translate(0, 0) rotate(5deg);
+    }
+    25% {
+        transform: translate(10px, -8px) rotate(-2deg);
+    }
+    50% {
+        transform: translate(0, -12px) rotate(-5deg);
+    }
+    75% {
+        transform: translate(-10px, -8px) rotate(2deg);
+    }
+}
 
 h1 {
     font-family: 'Press Start 2P', monospace;
@@ -94,7 +108,7 @@ h1 {
     background: linear-gradient(180deg, #5040c0, #2a2080);
     color: #fff;
     border-color: var(--cyan);
-    box-shadow: 0 -4px 15px #5040c040;
+    box-shadow: 0 -4px 15px #5040c040, 0 0 10px #30d8f040;
 }
 .tab-content { display: none; }
 .tab-content.active { display: grid; animation: slide-in-fade 0.4s ease forwards; }
@@ -127,6 +141,12 @@ main {
     font-size: 11px;
     color: var(--gold);
     border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.panel:hover {
+    border-color: var(--cyan);
+    box-shadow: var(--shadow), 0 0 15px #30d8f020;
 }
 
 .full-width { grid-column: 1 / -1; }
@@ -210,7 +230,7 @@ select:focus, input:focus { border-color: var(--cyan); }
     text-shadow: 1px 1px 0 #1a1050;
 }
 .btn-primary:hover { 
-    transform: translateY(-2px); 
+    transform: translateY(-2px) scale(1.02); 
     box-shadow: 0 6px 0 #1a1050, 0 0 40px #9060f080; 
     text-shadow: 1px 1px 0 #1a1050, 0 0 10px #ffffff;
 }
@@ -233,7 +253,7 @@ select:focus, input:focus { border-color: var(--cyan); }
 .dadge-face {
     font-size: 56px;
     flex-shrink: 0;
-    animation: float 2.5s ease-in-out infinite;
+    animation: dragon-float 3.5s ease-in-out infinite reverse;
 }
 .dadge-text { font-size: 24px; color: var(--gold); line-height: 1.5; }
 .dadge-name { font-family:'Press Start 2P',monospace; font-size:11px; color:var(--gold2); margin-bottom:8px; }
