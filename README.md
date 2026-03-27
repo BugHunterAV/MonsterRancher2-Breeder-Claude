@@ -5,6 +5,8 @@ Totalmente construída como uma *Single Page Application (SPA)* Client-Side com 
 
 ![MR2 Breeder Interface](https://via.placeholder.com/800x400?text=Monster+Rancher+2+Breeding+Calculator)
 
+
+SITE Temporariamente hospedado: [Hospedado VERCEL - breedermonster.vercel.app](https://breedermonster.vercel.app/)
 ## 🚀 Como usar
 
 Como o projeto agora é 100% frontend estático, existem duas maneiras super simples de usar:
