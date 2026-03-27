@@ -3,10 +3,14 @@
 Calculadora de combinações e IA de Matchmaking para **Monster Rancher 2 DX (Steam)**. 
 Totalmente construída como uma *Single Page Application (SPA)* Client-Side com Vanilla JS. Sem backend, sem instalações complicadas, roda direto no navegador!
 
-![MR2 Breeder Interface](https://via.placeholder.com/800x400?text=Monster+Rancher+2+Breeding+Calculator)
+![MR2 Breeder Interface](https://breedermonster.vercel.app/)
 
 
-SITE Temporariamente hospedado: [Hospedado VERCEL - breedermonster.vercel.app](https://breedermonster.vercel.app/)
+SITE Temporariamente hospedado: 
+<a href="https://breedermonster.vercel.app/" target="_blank" rel="noopener noreferrer">
+Hospedado VERCEL - breedermonster.vercel.app
+</a>
+
 ## 🚀 Como usar
 
 Como o projeto agora é 100% frontend estático, existem duas maneiras super simples de usar:
